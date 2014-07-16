@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="Byidi" APIVersion="8" Name="GuildCal" Description="Simple in game calendar for guild">
+<Addon Author="Byidi" APIVersion="9" Name="GuildCal" Description="Simple in game calendar for guild">
     <Script Name="GuildCal.lua"/>
     <Form Name="GuildCal.xml"/>
 </Addon>
