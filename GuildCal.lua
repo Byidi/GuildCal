@@ -18,14 +18,14 @@ function GuildCal:new(o)
 	o.DayList = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" }
 	o.MonthList = { "Janvier", "F\195\169vrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Ao\195\187t", "Septembre", "Octobre", "Novembre", "D\195\169cembre" }
 	o.IconSprite = {
-		Event="IconSprites:Icon_MapNode_Map_QuestHub",
-		Donjon="IconSprites:Icon_Achievement_Achievement_Dungeon",
-		Raid="IconSprites:Icon_Achievement_Achievement_Raid",
-		Aventure="IconSprites:Icon_Achievement_Achievement_Adventures",
-		Arena="IconSprites:Icon_Achievement_Achievement_PvP",
-		Warplot="IconSprites:Icon_Achievement_Achievement_Reputation",
-		Meeting="IconSprites:Icon_Achievement_Achievement_WorldEvent",
-		Divers="IconSprites:Icon_Achievement_Achievement_Quest"
+		Event="Icon_MapNode_Map_QuestHub",
+		Donjon="Icon_Achievement_Achievement_Dungeon",
+		Raid="Icon_Achievement_Achievement_Raid",
+		Aventure="Icon_Achievement_Achievement_Adventures",
+		Arena="Icon_Achievement_Achievement_PvP",
+		Warplot="Icon_Achievement_Achievement_Reputation",
+		Meeting="Icon_Achievement_Achievement_WorldEvent",
+		Divers="Icon_Achievement_Achievement_Quest"
 	}
 	
 	o.MonthCurrent = ""
@@ -149,6 +149,7 @@ function GuildCal:PopulateEventList()
 		Event:FindChild("Title"):SetText(DayEvent[i].Title)
 		Event:FindChild("Hours"):SetText(DayEvent[i].Hours)
 		Event:SetTooltip(DayEvent[i].Description)
+		Event:SetData(DayEvent[i].Description)
 		local Icon = DayEvent[i].Icon
 		Event:FindChild("Icon"):SetSprite(self.IconSprite[DayEvent[i].Icon])
 		Event:Show(true)
@@ -206,11 +207,11 @@ function GuildCal:EventExist(Tab, Title, Description, Hours, Minutes, Icon, Day,
 	if tonumber(Day) <= 9 then Day="0"..Day end
 	if tonumber(Hours) <= 9 then Hours="0"..Hours end
 	if tonumber(Minutes) <= 9 then Minutes="0"..Minutes end
-	
+		
 	local Date = Year..Month..Day..Hours..Minutes
-	
+		Print("Date : "..Date.."/"..Date)
 	for i=1,table.getn(Tab) do
-		if Tab[i].Date > Date then return false end
+		if Tab[i].Date > Date then break end
 		if Tab[i].Date == Date and Tab[i].Title == Title and Tab[i].Description == Description and Tab[i].Icon == Icon then
 			return i
 		end
@@ -239,7 +240,12 @@ function GuildCal:DeleteEvent(Title, Description, Hours, Minutes, Icon, Day, Mon
 	if EventId ~= 0 then
 		table.remove(self.EventTab,EventId)
 		table.sort(self.EventTab, function (a, b) return a.Date < b.Date end)
+		if tonumber(Month) <= 9 then Month="0"..Month end
+		if tonumber(Day) <= 9 then Day="0"..Day end
+		if tonumber(Hours) <= 9 then Hours="0"..Hours end
+		if tonumber(Minutes) <= 9 then Minutes="0"..Minutes end
 		
+		local Date = Year..Month..Day..Hours..Minutes
 		if self:EventExist(self.EventRemoveTab, Title, Description, Hours, Minutes, Icon, Day, Month, Year) == 0 then
 			table.insert(self.EventRemoveTab, {Date=Date,Title=Title,Description=Description,Icon=Icon})
 			table.sort(self.EventRemoveTab, function (a, b) return a.Date < b.Date end)
@@ -401,11 +407,33 @@ function GuildCal:OnSaveEvent()
 			self.wndAddEvent:FindChild("InputIcon"):SetRadioSelButton("IconRadio", self.wndAddEvent:FindChild("InputIcon"):FindChild("Divers"))
 			self.wndAddEvent:Close()
 			self:PopulateEventList()
+			self:DisplayCalendar()
 		else
 			ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, "[GuildCal] This event allready exist")
 		end
 	else
 		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_System, "[GuildCal] Title, Hours, Minutes and Icon must not be empty")
+	end
+end
+
+function GuildCal:OnDeleteEvent(wndControl)
+	local Title = wndControl:GetParent():FindChild("Title"):GetText()
+	local Description = wndControl:GetParent():GetData()
+	local Time = wndControl:GetParent():FindChild("Hours"):GetText()
+	local Sprite = wndControl:GetParent():FindChild("Icon"):GetSprite()
+	local Icon = "Divers"
+	for k,g in pairs(self.IconSprite) do
+		if g == Sprite then
+			Icon = k
+		end
+	end
+	local Hours = tonumber(string.sub(Time,1,2))
+	local Minutes = tonumber(string.sub(Time,4,5))
+	
+	if self:DeleteEvent(Title, Description, Hours, Minutes, Icon, self.DaySelect, self.MonthSelect, self.YearSelect) then
+		self:PopulateEventList()
+		self:DisplayCalendar()
+		self:BroacastDelEvent(Title, Description, Hours, Minutes, Icon, self.DaySelect, self.MonthSelect, self.YearSelect)
 	end
 end
 
