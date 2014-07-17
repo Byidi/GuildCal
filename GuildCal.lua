@@ -186,7 +186,6 @@ function GuildCal:GetDayEvent(Day, Month)
 	
 	local SearchDateMin = self.YearCurrent..Month..Day.."0000"
 	local SearchDateMax = self.YearCurrent..Month..Day.."2359"
-	-- Print(string.format("[GuildCal] %s-%s => ", SearchDateMin, SearchDateMax))
 	local DayEvent = {}
 	for i = 1, table.getn(self.EventTab) do
 		if DayEvent[1] ~= nill and self.EventTab[i].Date > SearchDateMax then
@@ -209,7 +208,6 @@ function GuildCal:EventExist(Tab, Title, Description, Hours, Minutes, Icon, Day,
 	if tonumber(Minutes) <= 9 then Minutes="0"..Minutes end
 		
 	local Date = Year..Month..Day..Hours..Minutes
-		Print("Date : "..Date.."/"..Date)
 	for i=1,table.getn(Tab) do
 		if Tab[i].Date > Date then break end
 		if Tab[i].Date == Date and Tab[i].Title == Title and Tab[i].Description == Description and Tab[i].Icon == Icon then
